@@ -15,10 +15,16 @@ import { StrategyComparison } from '@/components/StrategyComparison';
 import { useDebtStore } from '@/store/debtStore';
 
 const Index = () => {
-  const { debts, totalDebt, monthlyBudget, setMonthlyBudget } = useDebtStore();
+  const { 
+    debts, 
+    totalDebt, 
+    totalMinimumPayments, 
+    monthlyBudget, 
+    setMonthlyBudget, 
+    removeDebt 
+  } = useDebtStore();
   const [showDebtForm, setShowDebtForm] = useState(false);
 
-  const totalMinimumPayments = debts.reduce((sum, debt) => sum + debt.minimumPayment, 0);
   const availableExtraPayment = Math.max(0, monthlyBudget - totalMinimumPayments);
 
   return (
@@ -115,7 +121,7 @@ const Index = () => {
                 ) : (
                   <div className="space-y-4">
                     {debts.map((debt) => (
-                      <DebtCard key={debt.id} debt={debt} />
+                      <DebtCard key={debt.id} debt={debt} onRemove={removeDebt} />
                     ))}
                   </div>
                 )}
@@ -184,9 +190,7 @@ const Index = () => {
   );
 };
 
-const DebtCard = ({ debt }) => {
-  const { removeDebt } = useDebtStore();
-  
+const DebtCard = ({ debt, onRemove }) => {
   const progressPercentage = ((debt.originalBalance - debt.balance) / debt.originalBalance) * 100;
 
   return (
@@ -201,7 +205,7 @@ const DebtCard = ({ debt }) => {
         <Button
           variant="ghost"
           size="sm"
-          onClick={() => removeDebt(debt.id)}
+          onClick={() => onRemove(debt.id)}
           className="text-red-500 hover:text-red-700 hover:bg-red-50"
         >
           <Trash2 className="h-4 w-4" />

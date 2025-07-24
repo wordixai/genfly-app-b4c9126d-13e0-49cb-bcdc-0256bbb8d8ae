@@ -38,6 +38,10 @@ interface DebtStore {
   setMonthlyBudget: (budget: number) => void;
   calculateStrategy: (strategy: 'snowball' | 'avalanche') => StrategyResult;
   clearAllDebts: () => void;
+  // Computed properties
+  totalDebt: number;
+  totalMinimumPayments: number;
+  averageInterestRate: number;
 }
 
 export const useDebtStore = create<DebtStore>()(
@@ -45,6 +49,22 @@ export const useDebtStore = create<DebtStore>()(
     (set, get) => ({
       debts: [],
       monthlyBudget: 0,
+
+      // Computed properties
+      get totalDebt() {
+        return get().debts.reduce((sum, debt) => sum + debt.balance, 0);
+      },
+      
+      get totalMinimumPayments() {
+        return get().debts.reduce((sum, debt) => sum + debt.minimumPayment, 0);
+      },
+      
+      get averageInterestRate() {
+        const debts = get().debts;
+        return debts.length > 0 
+          ? debts.reduce((sum, debt) => sum + debt.interestRate, 0) / debts.length 
+          : 0;
+      },
 
       addDebt: (debtData) => {
         const newDebt: Debt = {
@@ -173,7 +193,7 @@ export const useDebtStore = create<DebtStore>()(
   )
 );
 
-// Computed values
+// Additional computed hook for more stats
 export const useDebtStats = () => {
   const debts = useDebtStore((state) => state.debts);
   
